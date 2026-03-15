@@ -184,3 +184,10 @@ library(performance)
 library(see)
 check_model(modelo)
 ```
+
++ **Posterior Predictive Check:** A linha da densidade dos dados preditos (verde) acompanha bem a dos dados observados (azul). O modelo apresenta boa capacidade preditiva.
++ **Linearity:** Os resíduos estão dispersos aleatoriamente ao redor da linha horizontal, atendendo ao pressuposto da linearidade.
++ **Homogeneity of Variance**: A linha de referência é plana e a dispersão vertical dos resíduos se mantém constante. O pressuposto de homocedasticidade foi atendido.
++ **Normality of Residuals**: Os pontos seguem aproximadamente a linha de referência, com pequenas divergências nas extremidades. Há leve violação da normalidade dos resíduos.
++ **Influential Observations**: Nenhum ponto ultrapassa o limite das linhas
++ **Colinearity**: Todos os valores de VIF estão abaixo do limite crítico de 5. Não há evidência de multicolinearidade entre os preditores.
