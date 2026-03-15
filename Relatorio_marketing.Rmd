@@ -4,22 +4,36 @@ author: "Gabriel Germano dos Santos"
 date: "2026-03-15"
 output:
   html_document:
+    theme: flatly
     toc: true
+    toc_float: true
     number_sections: true
 ---
 
 
 ```{r setup, include=FALSE}
+
 library(readxl)
 library(ggplot2)
 library(dplyr)
+library(flextable)
 
 knitr::opts_chunk$set(echo = TRUE)
+
+options(digits = 3)
+
+set_flextable_defaults(decimal.mark = ",", big.mark = " ")
+
+theme_set(theme_minimal())
 ```
 
 # Introdução à análise
 
+Este trabalho apresenta uma análise estatística do dataset “03 - Marketing - Disponibilizar”.
 
+O dataset possui variáveis categóricas e numéricas que contêm informações relacionadas às campanhas de marketing de uma empresa de e-commerce varejista. As variáveis presentes permitem uma análise detalhada sobre os fatores que influenciam a receita gerada pelas campanhas, para as quais estaremos ajustando um modelo de regressão linear múltipla.
+
+O principal objetivo deste trabalho é identificar os principais fatores que influenciam a receita das campanhas de marketing, utilizando técnicas de análise exploratória e regressão linear múltipla.
 
 ## R Markdown
 
