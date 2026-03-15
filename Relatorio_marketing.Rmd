@@ -35,22 +35,15 @@ O dataset possui variáveis categóricas e numéricas que contêm informações 
 
 O principal objetivo deste trabalho é identificar os principais fatores que influenciam a receita das campanhas de marketing, utilizando técnicas de análise exploratória e regressão linear múltipla.
 
-## R Markdown
+# Dados da análise
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r, include=FALSE}
+# Lendo a base de dados e armazenando ela na variável 'dados'.
+library(readxl)
+dados <- read_excel("03 - Marketing - Disponibilizar.xlsx")
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+# Apresentação dos dados
+glimpse(dados)
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
