@@ -1,6 +1,9 @@
 ---
 title: "Análise - Campanha de Marketing"
-author: "Gabriel Germano dos Santos"
+author:
+  - "Gabriel Germano dos Santos - 123110263" 
+  - "Denis Almeida Ferreira - 123210975"
+  - "Wendel Silva Italiano de Araújo - 123111398"
 date: "2026-03-15"
 output:
   html_document:
@@ -48,15 +51,128 @@ dados <- read_excel("03 - Marketing - Disponibilizar.xlsx")
 glimpse(dados)
 ```
 
-# Analises Bivariadas
+A partir da base de dados, podemos visualizar as seguintes varíaveis:
 
-## Variáveis Numéricas
+- `receita_mil`: receita gerada pela campanha (em milhares de R$);  
+- `invest_digital`: valor investido em marketing digital (em milhares de R$);  
+- `cpc`: custo por clique (em R$);  
+- `canal`: canal de marketing utilizado na campanha (Redes Sociais, E-mail, SEO, Display);  
+- `sazonalidade`: período da campanha (Alta ou Baixa sazonalidade);  
+- `num_cliques_mil`: número de cliques recebidos pela campanha (em milhares);  
+- `impressoes_mil`: número de impressões geradas pela campanha (em milhares);  
+- `num_promotores`: quantidade de promotores envolvidos na campanha;  
+- `duracao_dias`: duração da campanha (em dias).  
 
-```{r, include=FALSE}
+# Análise Exploratória dos Dados
+
+A análise exploratória de dados tem como objetivo compreender melhor as características da base de dados antes da aplicação de modelos estatísticos mais complexos.
+
+```{r analise-exploratoria, echo=TRUE, message=FALSE, warning=FALSE}
+
+# Dados
+library(skimr)
+skim(dados)
+```
+
+## Limpeza dos Dados
+
+Antes da análise, foi realizada uma inspeção para identificar valores ausentes na base de dados.
+Observou-se que a maioria das variáveis numéricas apresentava apenas 1 ou 2 valores ausentes, enquanto as variáveis categóricas `canal` e `sazonalidade` tinham 7 observações faltantes cada.
+
+```{r}
+colSums(is.na(dados))
+```
+
+Considerando a importância dessas variáveis para a análise e a quantidade relativamente pequena de dados ausentes, optou-se por remover as observações incompletas. Essa decisão permite manter a integridade e consistência do conjunto de dados, garantindo que o modelo de regressão seja ajustado apenas com informações completas.
+
+```{r, include=TRUE}
 # Retirando observações com dados ausentes (NA)
 dados_analise <- na.omit(dados)
 
 ```
+
+
+## Estatísticas Descritivas
+
+```{r}
+summary(dados_analise)
+```
+
+A análise descritiva das variáveis numéricas permite compreender o comportamento geral dos dados presentes na base analisada.
+
+A variável `receita_mil` apresentou média próxima de 162 mil unidades monetárias, com valores variando aproximadamente entre 53 e 273. Essa variação indica diferenças significativas no desempenho das campanhas analisadas.
+
+Além da variável resposta, a base contém variáveis relacionadas a investimento em marketing digital e tradicional, métricas de engajamento (cliques e impressões) e características operacionais das campanhas.
+
+## Análise Gráfica
+
+Nesta seção, são apresentados gráficos que permitem visualizar o comportamento das variáveis da base e suas relações com a variável resposta `receita_mil`. A análise gráfica auxilia na identificação de padrões, tendências, outliers e possíveis relações lineares ou não-lineares, servindo como suporte para a modelagem estatística subsequente.
+
+### Histograma
+
+O histograma da variável receita_mil permite observar a distribuição dos valores de receita gerados pelas campanhas. A partir da imagem, podemos notas que a distribuição apresenta formato aproximadamente normal, com a maior concentração de dados entre 100 mil e 200 mil e pico em torno de 170 mil.
+
+```{r message=FALSE}
+ggplot(dados_analise, aes(x = receita_mil)) +
+  geom_histogram(bins = 30, fill="steelblue", color="black") +
+  labs(
+    title = "Distribuição da Receita das Campanhas",
+    x = "Receita (mil)",
+    y = "Frequência"
+  ) +
+  theme_minimal()
+```
+
+### Boxplot
+
+O boxplot da variável receita_mil foi utilizado para identificar possíveis valores extremos (outliers) e analisar a dispersão dos dados em torno da mediana. Esse gráfico permite visualizar a distribuição dos valores de receita e compreender melhor a variabilidade presente no conjunto de dados.
+
+```{r message=FALSE}
+ggplot(dados_analise, aes(y = receita_mil)) +
+  geom_boxplot(fill="orange") +
+  labs(
+    title = "Boxplot da variável receita_mil",
+    y = "Receita (mil)"
+  ) +
+  theme_minimal()
+```
+
+### Gráficos de Dispersão
+
+Os gráficos de dispersão entre receita_mil e variáveis como invest_digital e num_cliques_mil permitem avaliar visualmente a possível relação entre a variável resposta e algumas variáveis explicativas. A presença de tendências ascendentes ou descendentes nesses gráficos pode indicar associações lineares entre as variáveis, o que justifica a aplicação de modelos de regressão linear múltipla nas etapas seguintes da análise.
+
+De modo geral, a análise gráfica complementa as estatísticas descritivas, fornecendo uma compreensão mais intuitiva dos dados e auxiliando na identificação de padrões, tendências e possíveis anomalias que podem influenciar os resultados do modelo estatístico.
+
+
+```{r message=FALSE}
+ggplot(dados_analise, aes(x = invest_digital, y = receita_mil)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE, color="red") +
+  labs(
+    title = "Receita vs Investimento Digital",
+    x = "Investimento Digital",
+    y = "Receita (mil)"
+  ) +
+  theme_minimal()
+```
+
+```{r message=FALSE}
+ggplot(dados_analise, aes(x = num_cliques_mil, y = receita_mil)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE, color="red") +
+  labs(
+    title = "Receita vs Número de Cliques",
+    x = "Cliques (mil)",
+    y = "Receita (mil)"
+  ) +
+  theme_minimal()
+```
+
+# Análises Bivariadas
+
+## Variáveis Numéricas
+
+
 
 ```{r, include=FALSE}
 dados_num <- dados_analise %>% select_if(is.numeric)
@@ -71,7 +187,7 @@ library(corrplot)
 corrplot(corr_matrix, method = "color", addCoef.col = "black")
 ```
 
-Nesta seção são analisadas as relações entre a variável dependente (receita_mil) e as demais variáveis do dataset. O objetivo é identificar possíveis associações entre a receita gerada pelas campanhas e os fatores relacionados ao investimento em marketing e desempenho das campanhas.
+Nesta seção são analisadas as relações entre a variável resposta (receita_mil) e as demais variáveis do dataset. O objetivo é identificar possíveis associações entre a receita gerada pelas campanhas e os fatores relacionados ao investimento em marketing e desempenho das campanhas.
 
 ### Principais destaques e interpretações
 
@@ -261,6 +377,7 @@ predict(modelo, newdata = cenario2, interval = "prediction")
 - Intervalo de Predição (95%): A receita de uma nova campanha com este perfil estará entre R$ 48,7 mil e R$ 95,1 mil
 
 # Conclusão
+
 
 Este relatório apresenta uma análise dos principais fatores que influenciam a receita gerada por campanhas de marketing, utilizando técnicas de exploração de dados e modelagem estatística. Após o tratamento e a limpeza dos dados, foram selecionadas variáveis explicativas com base em critérios estatísticos e conceituais, priorizando aquelas com maior capacidade de explicar a variação na receita.
 
