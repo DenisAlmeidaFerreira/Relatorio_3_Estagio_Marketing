@@ -174,10 +174,7 @@ modelo %>% tbl_regression()
 plot(modelo)
 ```
 
-## Análise dos pressupostos
-
-### Pressuposto do modelo original
-
+# Análise dos pressupostos
 
 ```{r check_model_plot, fig.width=12, fig.height=12, message=FALSE}
 library(performance)
@@ -191,3 +188,76 @@ check_model(modelo)
 + **Normality of Residuals**: Os pontos seguem aproximadamente a linha de referência, com pequenas divergências nas extremidades. Há leve violação da normalidade dos resíduos.
 + **Influential Observations**: Nenhum ponto ultrapassa o limite das linhas
 + **Colinearity**: Todos os valores de VIF estão abaixo do limite crítico de 5. Não há evidência de multicolinearidade entre os preditores.
+
+Desse modo, os pressupostos foram considerados atendidos. Adicionalmente, foi calculado o Fator de Inflação de Variância para verificar a multicolinearidade entre os preditores.
+
+```{r vif-final, message=FALSE}
+library(car)
+vif(modelo)
+```
+
+Todos os valores de VIF estão próximos de 1, sendo assim, não há evicência de multicolinearidade.
+
+
+# Estimativas
+
+```{r}
+estimativa <- data.frame(
+  invest_digital = 10,       
+  cpc = 2,                   
+  canal = "Redes Sociais",   
+  sazonalidade = "Alta"      
+)
+
+predict(modelo, newdata = estimativa, interval = "confidence")
+```
+
+Considerando uma campanha com investimento digital de 10 mil, CPC de 2, canal “Redes Sociais” e período de alta sazonalidade, estima-se que a receita média seja de aproximadamente 117 mil. Com 95% de confiança, espera-se que o valor médio real da receita esteja entre 110 e 124 mil.
+
+# Previsões
+
+Utilizaremos o modelo para realizar a predição em dois cenários hipotéticos
+
+**Cenário 1**: Investimento digital de 10 mil, CPC 2, canal “Redes Sociais” e sazonalidade alta
+
+```{r}
+cenario1 <- data.frame(
+  invest_digital = 10,            
+  cpc = 2,                        
+  canal = "Redes Sociais",        
+  sazonalidade = "Alta"          
+)
+
+predict(modelo, newdata = cenario1, interval = "confidence")
+
+predict(modelo, newdata = cenario1, interval = "prediction")
+```
+
+- Previsão de Receita: R$ 117 mil
+
+- Intervalo de Confiança (95%): A média de receita para campanhas com este perfil está entre R$ 110 mil e R$ 123 mil
+
+- Intervalo de Predição (95%): A receita de uma nova campanha com este perfil estará entre R$ 93,2 mil e R$ 140 mil
+
+**Cenário 2**: Investimento digital de 5 mil, CPC 3, canal “E-mail” e sazonalidade baixa
+
+```{r}
+cenario2 <- data.frame(
+  invest_digital = 5,             
+  cpc = 3,                        
+  canal = "E-mail",               
+  sazonalidade = "Baixa"          
+)
+
+predict(modelo, newdata = cenario2, interval = "confidence")
+
+predict(modelo, newdata = cenario2, interval = "prediction")
+```
+
+- Previsão de Receita: R$ 71 mil
+
+- Intervalo de Confiança (95%): A média de receita para campanhas com este perfil está entre R$ 66.9  mil e R$ 76.9 mil
+
+- Intervalo de Predição (95%): A receita de uma nova campanha com este perfil estará entre R$ 48,7 mil e R$ 95,1 mil
+
+## Conclusão
