@@ -1,0 +1,388 @@
+---
+title: "Análise - Campanha de Marketing"
+author:
+- "Gabriel Germano dos Santos - 123110263"
+- "Denis Almeida Ferreira - 123210975"
+- "Wendel Silva Italiano de Araújo - 123111398"
+date: "2026-03-15"
+format:
+  html:
+    theme: flatly
+number-sections: true
+theme: flatly
+toc-location: left
+toc: true
+editor: visual
+---
+
+
+```{r setup, include=FALSE}
+
+library(readxl)
+library(ggplot2)
+library(dplyr)
+library(flextable)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+options(digits = 3)
+
+set_flextable_defaults(decimal.mark = ",", big.mark = " ")
+
+theme_set(theme_minimal())
+```
+
+# Introdução à análise
+
+Este trabalho apresenta uma análise estatística do dataset “03 - Marketing - Disponibilizar”.
+
+O dataset possui variáveis categóricas e numéricas que contêm informações relacionadas às campanhas de marketing de uma empresa de e-commerce varejista. As variáveis presentes permitem uma análise detalhada sobre os fatores que influenciam a receita gerada pelas campanhas, para as quais estaremos ajustando um modelo de regressão linear múltipla.
+
+O principal objetivo deste trabalho é identificar os principais fatores que influenciam a receita das campanhas de marketing, utilizando técnicas de análise exploratória e regressão linear múltipla.
+
+# Dados da análise
+
+```{r, include=FALSE}
+# Lendo a base de dados e armazenando ela na variável 'dados'.
+library(readxl)
+dados <- read_excel("03 - Marketing - Disponibilizar.xlsx")
+```
+
+```{r}
+# Apresentação dos dados
+glimpse(dados)
+```
+
+A partir da base de dados, podemos visualizar as seguintes varíaveis:
+
+- `receita_mil`: receita gerada pela campanha (em milhares de R$);  
+- `invest_digital`: valor investido em marketing digital (em milhares de R$);  
+- `cpc`: custo por clique (em R$);  
+- `canal`: canal de marketing utilizado na campanha (Redes Sociais, E-mail, SEO, Display);  
+- `sazonalidade`: período da campanha (Alta ou Baixa sazonalidade);  
+- `num_cliques_mil`: número de cliques recebidos pela campanha (em milhares);  
+- `impressoes_mil`: número de impressões geradas pela campanha (em milhares);  
+- `num_promotores`: quantidade de promotores envolvidos na campanha;  
+- `duracao_dias`: duração da campanha (em dias).  
+
+# Análise Exploratória dos Dados
+
+A análise exploratória de dados tem como objetivo compreender melhor as características da base de dados antes da aplicação de modelos estatísticos mais complexos.
+
+```{r analise-exploratoria, echo=TRUE, message=FALSE, warning=FALSE}
+
+# Dados
+library(skimr)
+skim(dados)
+```
+
+## Limpeza dos Dados
+
+Antes da análise, foi realizada uma inspeção para identificar valores ausentes na base de dados.
+Observou-se que a maioria das variáveis numéricas apresentava apenas 1 ou 2 valores ausentes, enquanto as variáveis categóricas `canal` e `sazonalidade` tinham 7 observações faltantes cada.
+
+```{r}
+colSums(is.na(dados))
+```
+
+Considerando a importância dessas variáveis para a análise e a quantidade relativamente pequena de dados ausentes, optou-se por remover as observações incompletas. Essa decisão permite manter a integridade e consistência do conjunto de dados, garantindo que o modelo de regressão seja ajustado apenas com informações completas.
+
+```{r, include=TRUE}
+# Retirando observações com dados ausentes (NA)
+dados_analise <- na.omit(dados)
+
+```
+
+
+## Estatísticas Descritivas
+
+```{r}
+summary(dados_analise)
+```
+
+A análise descritiva das variáveis numéricas permite compreender o comportamento geral dos dados presentes na base analisada.
+
+A variável `receita_mil` apresentou média próxima de 162 mil unidades monetárias, com valores variando aproximadamente entre 53 e 273. Essa variação indica diferenças significativas no desempenho das campanhas analisadas.
+
+Além da variável resposta, a base contém variáveis relacionadas a investimento em marketing digital e tradicional, métricas de engajamento (cliques e impressões) e características operacionais das campanhas.
+
+## Análise Gráfica
+
+Nesta seção, são apresentados gráficos que permitem visualizar o comportamento das variáveis da base e suas relações com a variável resposta `receita_mil`. A análise gráfica auxilia na identificação de padrões, tendências, outliers e possíveis relações lineares ou não-lineares, servindo como suporte para a modelagem estatística subsequente.
+
+### Histograma
+
+O histograma da variável receita_mil permite observar a distribuição dos valores de receita gerados pelas campanhas. A partir da imagem, podemos notas que a distribuição apresenta formato aproximadamente normal, com a maior concentração de dados entre 100 mil e 200 mil e pico em torno de 170 mil.
+
+```{r message=FALSE}
+ggplot(dados_analise, aes(x = receita_mil)) +
+  geom_histogram(bins = 30, fill="steelblue", color="black") +
+  labs(
+    title = "Distribuição da Receita das Campanhas",
+    x = "Receita (mil)",
+    y = "Frequência"
+  ) +
+  theme_minimal()
+```
+
+### Boxplot
+
+O boxplot da variável receita_mil foi utilizado para identificar possíveis valores extremos (outliers) e analisar a dispersão dos dados em torno da mediana. Esse gráfico permite visualizar a distribuição dos valores de receita e compreender melhor a variabilidade presente no conjunto de dados.
+
+```{r message=FALSE}
+ggplot(dados_analise, aes(y = receita_mil)) +
+  geom_boxplot(fill="orange") +
+  labs(
+    title = "Boxplot da variável receita_mil",
+    y = "Receita (mil)"
+  ) +
+  theme_minimal()
+```
+
+### Gráficos de Dispersão
+
+Os gráficos de dispersão entre receita_mil e variáveis como invest_digital e num_cliques_mil permitem avaliar visualmente a possível relação entre a variável resposta e algumas variáveis explicativas. A presença de tendências ascendentes ou descendentes nesses gráficos pode indicar associações lineares entre as variáveis, o que justifica a aplicação de modelos de regressão linear múltipla nas etapas seguintes da análise.
+
+De modo geral, a análise gráfica complementa as estatísticas descritivas, fornecendo uma compreensão mais intuitiva dos dados e auxiliando na identificação de padrões, tendências e possíveis anomalias que podem influenciar os resultados do modelo estatístico.
+
+
+```{r message=FALSE}
+ggplot(dados_analise, aes(x = invest_digital, y = receita_mil)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE, color="red") +
+  labs(
+    title = "Receita vs Investimento Digital",
+    x = "Investimento Digital",
+    y = "Receita (mil)"
+  ) +
+  theme_minimal()
+```
+
+```{r message=FALSE}
+ggplot(dados_analise, aes(x = num_cliques_mil, y = receita_mil)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE, color="red") +
+  labs(
+    title = "Receita vs Número de Cliques",
+    x = "Cliques (mil)",
+    y = "Receita (mil)"
+  ) +
+  theme_minimal()
+```
+
+# Análises Bivariadas
+
+## Variáveis Numéricas
+
+
+
+```{r, include=FALSE}
+dados_num <- dados_analise %>% select_if(is.numeric)
+
+corr_matrix <- cor(dados_num, use = "complete.obs")
+corr_matrix
+
+```
+
+```{r, message=FALSE}
+library(corrplot)
+corrplot(corr_matrix, method = "color", addCoef.col = "black")
+```
+
+Nesta seção são analisadas as relações entre a variável resposta (receita_mil) e as demais variáveis do dataset. O objetivo é identificar possíveis associações entre a receita gerada pelas campanhas e os fatores relacionados ao investimento em marketing e desempenho das campanhas.
+
+### Principais destaques e interpretações
+
+1) `receita_mil` (variável resposta)
+
+Correlação com as demais variáveis:
+
+- `invest_digital` → 0.94 → Correlação muito forte positiva;
+
+- `impressoes_mil` → 0.93 → Correlação muito forte positiva;
+
+- `num_cliques_mil` → 0.90 → Correlação muito forte positiva;
+
+- `taxa_conversao` → 0.13 → Correlação fraca positiva;
+
+- `invest_tradicional` → 0.10 → Correlação fraca positiva;
+
+- `num_promotores` → 0.05 → Correlação muito fraca;
+
+- `duracao_dias` → -0.09 → Correlação fraca negativa;
+
+- `cpc` → -0.53 → Correlação moderada negativa.
+
+
+2) Correlação entre variáveis explicativas
+
+- `invest_digital` e `impressoes_mil` → 0.99 → Correlação extremamente alta;
+
+- `invest_digital` e `num_cliques_mil` → 0.93 → Correlação muito alta;
+
+- `impressoes_mil` e `num_cliques_mil` → 0.93 → Correlação muito alta.
+
+Esses resultados indicam a presença de forte associação entre algumas variáveis explicativas, o que pode caracterizar multicolinearidade. Em especial, as variáveis relacionadas ao desempenho digital das campanhas apresentam correlações muito elevadas entre si, sugerindo que podem carregar informações semelhantes no modelo de regressão. Desse modo, o ideal é escolher entre uma delas.
+
+## Variáveis Categóricas
+
+Análise bivariada entre `canal` e `receita_mil`.
+
+```{r}
+library(ggplot2)
+
+ggplot(dados_analise, aes(x = canal, y = receita_mil)) +
+  geom_boxplot() +
+  theme_minimal()
+```
+
+A análise bivariada entre a variável categórica `canal` e a variável numérica `receita_mil` permite observar diferenças na distribuição da receita entre os diferentes canais de marketing.
+
+Observa-se que campanhas realizadas por meio de `Redes Sociais` e `E-mail` apresentam medianas de receita superiores em comparação aos demais canais, sugerindo maior desempenho desses meios na geração de receita. O canal `SEO` apresenta valores intermediários de receita, enquanto o canal `Display` apresenta mediana inferior.
+
+Além disso, percebe-se maior variabilidade na receita das campanhas realizadas por `E-mail` e `Redes Sociais`, indicando maior dispersão dos resultados obtidos nesses canais.
+
+Análise bivariada entre sazonalidade e receita_mil.
+```{r}
+ggplot(dados_analise, aes(x = sazonalidade, y = receita_mil)) +
+  geom_boxplot() +
+  theme_minimal()
+```
+
+
+A análise bivariada entre `sazonalidade` e `receita_mil` permite observar diferenças na distribuição da receita das campanhas entre períodos de alta e baixa sazonalidade.
+
+Observa-se que campanhas realizadas em períodos de `Alta` sazonalidade apresentam mediana de receita superior em comparação aos períodos de `Baixa` sazonalidade. Além disso, nota-se maior dispersão dos valores de receita nesses períodos, indicando maior variabilidade nos resultados obtidos.
+
+Esses resultados sugerem que fatores sazonais podem influenciar o desempenho das campanhas de marketing, possivelmente devido ao aumento da demanda em determinadas épocas do ano
+
+
+# Regressão Linear
+```{r}
+modelo <- lm(receita_mil ~ invest_digital + cpc + canal + sazonalidade, data = dados_analise)
+
+summary(modelo)
+
+```
+
+O modelo ajustado revelou que a variável `invest_digital` apresentou efeito positivo e estatisticamente significativo sobre a receita_mil, indicando que aumentos no investimento digital estão fortemente associados a incrementos na receita das campanhas.
+
+A variável `cpc` não apresentou efeito significativo no modelo, sugerindo que seu impacto sobre a receita não é estatisticamente confiável no conjunto de dados analisado.
+
+Entre as variáveis categóricas, o `canal` de marketing mostrou diferenças importantes: campanhas realizadas via Redes Sociais geraram aumento significativo na receita em comparação ao canal de referência (Display), enquanto E-mail e SEO não apresentaram efeito significativo.
+
+> O modelo final apresentou um R² ajustado de 0.94, indicando que aproximadamente 94% da variação na receita das campanhas é explicada pelas variáveis incluídas no modelo.
+
+```{r include=FALSE}
+
+library(gtsummary)
+
+library(broom)
+
+library(broom.helpers)
+
+```
+
+```{r message=FALSE}
+modelo %>% tbl_regression()
+```
+
+
+```{r message=FALSE}
+plot(modelo)
+```
+
+# Análise dos pressupostos
+
+```{r check_model_plot, fig.width=12, fig.height=12, message=FALSE}
+library(performance)
+library(see)
+check_model(modelo)
+```
+
++ **Posterior Predictive Check:** A linha da densidade dos dados preditos (verde) acompanha bem a dos dados observados (azul). O modelo apresenta boa capacidade preditiva.
++ **Linearity:** Os resíduos estão dispersos aleatoriamente ao redor da linha horizontal, atendendo ao pressuposto da linearidade.
++ **Homogeneity of Variance**: A linha de referência é plana e a dispersão vertical dos resíduos se mantém constante. O pressuposto de homocedasticidade foi atendido.
++ **Normality of Residuals**: Os pontos seguem aproximadamente a linha de referência, com pequenas divergências nas extremidades. Há leve violação da normalidade dos resíduos.
++ **Influential Observations**: Nenhum ponto ultrapassa o limite das linhas
++ **Colinearity**: Todos os valores de VIF estão abaixo do limite crítico de 5. Não há evidência de multicolinearidade entre os preditores.
+
+Desse modo, os pressupostos foram considerados atendidos. Adicionalmente, foi calculado o Fator de Inflação de Variância para verificar a multicolinearidade entre os preditores.
+
+```{r vif-final, message=FALSE}
+library(car)
+vif(modelo)
+```
+
+Todos os valores de VIF estão próximos de 1, sendo assim, não há evicência de multicolinearidade.
+
+
+# Estimativas
+
+```{r}
+estimativa <- data.frame(
+  invest_digital = 10,       
+  cpc = 2,                   
+  canal = "Redes Sociais",   
+  sazonalidade = "Alta"      
+)
+
+predict(modelo, newdata = estimativa, interval = "confidence")
+```
+
+Considerando uma campanha com investimento digital de 10 mil, CPC de 2, canal “Redes Sociais” e período de alta sazonalidade, estima-se que a receita média seja de aproximadamente 117 mil. Com 95% de confiança, espera-se que o valor médio real da receita esteja entre 110 e 124 mil.
+
+# Previsões
+
+Utilizaremos o modelo para realizar a predição em dois cenários hipotéticos
+
+**Cenário 1**: Investimento digital de 10 mil, CPC 2, canal “Redes Sociais” e sazonalidade alta
+
+```{r}
+cenario1 <- data.frame(
+  invest_digital = 10,            
+  cpc = 2,                        
+  canal = "Redes Sociais",        
+  sazonalidade = "Alta"          
+)
+
+predict(modelo, newdata = cenario1, interval = "confidence")
+
+predict(modelo, newdata = cenario1, interval = "prediction")
+```
+
+- Previsão de Receita: R$ 117 mil
+
+- Intervalo de Confiança (95%): A média de receita para campanhas com este perfil está entre R$ 110 mil e R$ 123 mil
+
+- Intervalo de Predição (95%): A receita de uma nova campanha com este perfil estará entre R$ 93,2 mil e R$ 140 mil
+
+**Cenário 2**: Investimento digital de 5 mil, CPC 3, canal “E-mail” e sazonalidade baixa
+
+```{r}
+cenario2 <- data.frame(
+  invest_digital = 5,             
+  cpc = 3,                        
+  canal = "E-mail",               
+  sazonalidade = "Baixa"          
+)
+
+predict(modelo, newdata = cenario2, interval = "confidence")
+
+predict(modelo, newdata = cenario2, interval = "prediction")
+```
+
+- Previsão de Receita: R$ 71 mil
+
+- Intervalo de Confiança (95%): A média de receita para campanhas com este perfil está entre R$ 66.9  mil e R$ 76.9 mil
+
+- Intervalo de Predição (95%): A receita de uma nova campanha com este perfil estará entre R$ 48,7 mil e R$ 95,1 mil
+
+# Conclusão
+
+
+Este relatório apresenta uma análise dos principais fatores que influenciam a receita gerada por campanhas de marketing, utilizando técnicas de exploração de dados e modelagem estatística. Após o tratamento e a limpeza dos dados, foram selecionadas variáveis explicativas com base em critérios estatísticos e conceituais, priorizando aquelas com maior capacidade de explicar a variação na receita.
+
+O modelo de regressão linear múltipla ajustado apresentou excelente ajuste (R² ajustado = 0,94), ausência de multicolinearidade e atendimento satisfatório aos principais pressupostos do modelo, com pequenas violações que não comprometem sua validade. As variáveis investimento digital, canal de marketing e sazonalidade mostraram influência significativa sobre a receita, enquanto o CPC não apresentou efeito estatisticamente relevante.
+
+Foram realizadas estimativas e predições em cenários hipotéticos, permitindo interpretar o impacto prático de diferentes estratégias de investimento, canais e períodos de campanha. Os resultados evidenciam que campanhas com investimentos mais elevados em canais digitais, especialmente Redes Sociais, e em períodos de alta sazonalidade tendem a gerar maiores receitas, enquanto campanhas em canais com menor desempenho ou em baixa sazonalidade apresentam resultados inferiores.
