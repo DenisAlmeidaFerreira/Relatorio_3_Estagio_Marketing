@@ -260,4 +260,10 @@ predict(modelo, newdata = cenario2, interval = "prediction")
 
 - Intervalo de Predição (95%): A receita de uma nova campanha com este perfil estará entre R$ 48,7 mil e R$ 95,1 mil
 
-## Conclusão
+# Conclusão
+
+Este relatório apresenta uma análise dos principais fatores que influenciam a receita gerada por campanhas de marketing, utilizando técnicas de exploração de dados e modelagem estatística. Após o tratamento e a limpeza dos dados, foram selecionadas variáveis explicativas com base em critérios estatísticos e conceituais, priorizando aquelas com maior capacidade de explicar a variação na receita.
+
+O modelo de regressão linear múltipla ajustado apresentou excelente ajuste (R² ajustado = 0,94), ausência de multicolinearidade e atendimento satisfatório aos principais pressupostos do modelo, com pequenas violações que não comprometem sua validade. As variáveis investimento digital, canal de marketing e sazonalidade mostraram influência significativa sobre a receita, enquanto o CPC não apresentou efeito estatisticamente relevante.
+
+Foram realizadas estimativas e predições em cenários hipotéticos, permitindo interpretar o impacto prático de diferentes estratégias de investimento, canais e períodos de campanha. Os resultados evidenciam que campanhas com investimentos mais elevados em canais digitais, especialmente Redes Sociais, e em períodos de alta sazonalidade tendem a gerar maiores receitas, enquanto campanhas em canais com menor desempenho ou em baixa sazonalidade apresentam resultados inferiores.
