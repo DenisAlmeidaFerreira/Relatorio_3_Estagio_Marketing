@@ -47,3 +47,140 @@ dados <- read_excel("03 - Marketing - Disponibilizar.xlsx")
 # Apresentação dos dados
 glimpse(dados)
 ```
+
+# Analises Bivariadas
+
+## Variáveis Numéricas
+
+```{r, include=FALSE}
+# Retirando observações com dados ausentes (NA)
+dados_analise <- na.omit(dados)
+
+```
+
+```{r, include=FALSE}
+dados_num <- dados_analise %>% select_if(is.numeric)
+
+corr_matrix <- cor(dados_num, use = "complete.obs")
+corr_matrix
+
+```
+
+```{r, message=FALSE}
+library(corrplot)
+corrplot(corr_matrix, method = "color", addCoef.col = "black")
+```
+
+Nesta seção são analisadas as relações entre a variável dependente (receita_mil) e as demais variáveis do dataset. O objetivo é identificar possíveis associações entre a receita gerada pelas campanhas e os fatores relacionados ao investimento em marketing e desempenho das campanhas.
+
+### Principais destaques e interpretações
+
+1) `receita_mil` (variável resposta)
+
+Correlação com as demais variáveis:
+
+- `invest_digital` → 0.94 → Correlação muito forte positiva;
+
+- `impressoes_mil` → 0.93 → Correlação muito forte positiva;
+
+- `num_cliques_mil` → 0.90 → Correlação muito forte positiva;
+
+- `taxa_conversao` → 0.13 → Correlação fraca positiva;
+
+- `invest_tradicional` → 0.10 → Correlação fraca positiva;
+
+- `num_promotores` → 0.05 → Correlação muito fraca;
+
+- `duracao_dias` → -0.09 → Correlação fraca negativa;
+
+- `cpc` → -0.53 → Correlação moderada negativa.
+
+
+2) Correlação entre variáveis explicativas
+
+- `invest_digital` e `impressoes_mil` → 0.99 → Correlação extremamente alta;
+
+- `invest_digital` e `num_cliques_mil` → 0.93 → Correlação muito alta;
+
+- `impressoes_mil` e `num_cliques_mil` → 0.93 → Correlação muito alta.
+
+Esses resultados indicam a presença de forte associação entre algumas variáveis explicativas, o que pode caracterizar multicolinearidade. Em especial, as variáveis relacionadas ao desempenho digital das campanhas apresentam correlações muito elevadas entre si, sugerindo que podem carregar informações semelhantes no modelo de regressão. Desse modo, o ideal é escolher entre uma delas.
+
+## Variáveis Categóricas
+
+Análise bivariada entre `canal` e `receita_mil`.
+
+```{r}
+library(ggplot2)
+
+ggplot(dados_analise, aes(x = canal, y = receita_mil)) +
+  geom_boxplot() +
+  theme_minimal()
+```
+
+A análise bivariada entre a variável categórica `canal` e a variável numérica `receita_mil` permite observar diferenças na distribuição da receita entre os diferentes canais de marketing.
+
+Observa-se que campanhas realizadas por meio de `Redes Sociais` e `E-mail` apresentam medianas de receita superiores em comparação aos demais canais, sugerindo maior desempenho desses meios na geração de receita. O canal `SEO` apresenta valores intermediários de receita, enquanto o canal `Display` apresenta mediana inferior.
+
+Além disso, percebe-se maior variabilidade na receita das campanhas realizadas por `E-mail` e `Redes Sociais`, indicando maior dispersão dos resultados obtidos nesses canais.
+
+Análise bivariada entre sazonalidade e receita_mil.
+```{r}
+ggplot(dados_analise, aes(x = sazonalidade, y = receita_mil)) +
+  geom_boxplot() +
+  theme_minimal()
+```
+
+
+A análise bivariada entre `sazonalidade` e `receita_mil` permite observar diferenças na distribuição da receita das campanhas entre períodos de alta e baixa sazonalidade.
+
+Observa-se que campanhas realizadas em períodos de `Alta` sazonalidade apresentam mediana de receita superior em comparação aos períodos de `Baixa` sazonalidade. Além disso, nota-se maior dispersão dos valores de receita nesses períodos, indicando maior variabilidade nos resultados obtidos.
+
+Esses resultados sugerem que fatores sazonais podem influenciar o desempenho das campanhas de marketing, possivelmente devido ao aumento da demanda em determinadas épocas do ano
+
+
+# Regressão Linear
+```{r}
+modelo <- lm(receita_mil ~ invest_digital + cpc + canal + sazonalidade, data = dados_analise)
+
+summary(modelo)
+
+```
+
+O modelo ajustado revelou que a variável `invest_digital` apresentou efeito positivo e estatisticamente significativo sobre a receita_mil, indicando que aumentos no investimento digital estão fortemente associados a incrementos na receita das campanhas.
+
+A variável `cpc` não apresentou efeito significativo no modelo, sugerindo que seu impacto sobre a receita não é estatisticamente confiável no conjunto de dados analisado.
+
+Entre as variáveis categóricas, o `canal` de marketing mostrou diferenças importantes: campanhas realizadas via Redes Sociais geraram aumento significativo na receita em comparação ao canal de referência (Display), enquanto E-mail e SEO não apresentaram efeito significativo.
+
+> O modelo final apresentou um R² ajustado de 0.94, indicando que aproximadamente 94% da variação na receita das campanhas é explicada pelas variáveis incluídas no modelo.
+
+```{r include=FALSE}
+
+library(gtsummary)
+
+library(broom)
+
+library(broom.helpers)
+
+```
+
+```{r message=FALSE}
+modelo %>% tbl_regression()
+```
+
+
+```{r message=FALSE}
+plot(modelo)
+```
+
+## Análise dos pressupostos
+
+### Pressuposto do modelo original
+
+
+```{r check_model_plot, fig.width=12, fig.height=12, message=FALSE}
+library(performance)
+library(see)
+check_model(modelo)
+```
