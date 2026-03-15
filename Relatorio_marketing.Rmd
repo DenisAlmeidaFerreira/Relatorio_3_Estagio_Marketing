@@ -1,13 +1,25 @@
 ---
-title: "Relatorio_marketing"
+title: "Análise - Campanha de Marketing"
 author: "Gabriel Germano dos Santos"
 date: "2026-03-15"
-output: html_document
+output:
+  html_document:
+    toc: true
+    number_sections: true
 ---
 
+
 ```{r setup, include=FALSE}
+library(readxl)
+library(ggplot2)
+library(dplyr)
+
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# Introdução à análise
+
+
 
 ## R Markdown
 
