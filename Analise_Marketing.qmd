@@ -1,0 +1,115 @@
+---
+title: "Relatório – Análise de Regressão Múltipla"
+author: "Denis Almeida Ferreira e Grupo"
+format: html
+---
+
+```{r}
+#| message: false
+#| warning: false
+
+library(readxl)
+library(ggplot2)
+library(dplyr)
+
+dados <- read_excel("03 - Marketing - Disponibilizar.xlsx")
+```
+
+# 1 Introdução
+
+Este trabalho tem como objetivo analisar um conjunto de dados relacionado a campanhas de marketing, buscando compreender quais fatores podem influenciar a receita gerada por essas campanhas. A análise será realizada utilizando técnicas de estatística descritiva, análise exploratória de dados e regressão linear múltipla.
+
+Inicialmente foi realizada uma exploração da base de dados para compreender sua estrutura, identificar possíveis inconsistências, valores ausentes e observações atípicas (outliers). Etapa fundamental para garantir a qualidade das análises estatísticas que serão realizadas posteriormente.
+
+Posteriormente, foram investigadas as relações entre as variáveis explicativas e a variável resposta, permitindo compreender os possíveis fatores que impactam o desempenho das campanhas de marketing. Essas análises serviram de base para a construção de modelos de regressão múltipla.
+
+# 2 Descrição da Base de Dados
+
+```{r}
+head(dados)
+```
+
+A base de dados utilizada neste estudo contém informações relacionadas ao desempenho de campanhas de marketing. O conjunto de dados possui aproximadamente 200 observações e diversas variáveis que descrevem características das campanhas, investimentos realizados e indicadores de desempenho.
+
+A variável **receita_mil** foi definida como variável resposta, pois representa o resultado final das campanhas de marketing, isto é, a receita gerada por cada campanha.
+
+As demais variáveis são consideradas variáveis explicativas, pois representam características das campanhas, como níveis de investimento em marketing, engajamento do público e características operacionais que podem impactar o desempenho financeiro das campanhas.
+
+# 3 Análise Exploratória de Dados
+
+A análise exploratória de dados tem como objetivo compreender melhor as características da base de dados antes da aplicação de modelos estatísticos mais complexos.
+
+## 3.1 Valores Ausentes
+
+```{r}
+colSums(is.na(dados))
+```
+
+Durante a análise preliminar foram identificados valores ausentes nas variáveis **invest_tradicional**, **num_promotores** e **taxa_conversao**. Optou-se por substituir os valores ausentes pela média das respectivas variáveis.
+
+## 3.2 Estatísticas Descritivas
+
+```{r}
+summary(dados)
+```
+
+A análise descritiva das variáveis numéricas permite compreender o comportamento geral dos dados presentes na base analisada.
+
+A variável **receita_mil** apresentou média próxima de 162 mil unidades monetárias, com valores variando aproximadamente entre 53 e 273. Essa variação indica diferenças significativas no desempenho das campanhas analisadas.
+
+Além da variável resposta, a base contém variáveis relacionadas a investimento em marketing digital e tradicional, métricas de engajamento (cliques e impressões) e características operacionais das campanhas.
+
+## 3.3 Análise Gráfica
+
+### Figura 1 – Histograma da variável receita_mil
+
+```{r}
+ggplot(dados, aes(x = receita_mil)) +
+  geom_histogram(bins = 30, fill="steelblue", color="black") +
+  labs(
+    title = "Distribuição da Receita das Campanhas",
+    x = "Receita (mil)",
+    y = "Frequência"
+  ) +
+  theme_minimal()
+```
+
+### Figura 2 – Boxplot da variável receita_mil
+
+```{r}
+ggplot(dados, aes(y = receita_mil)) +
+  geom_boxplot(fill="orange") +
+  labs(
+    title = "Boxplot da variável receita_mil",
+    y = "Receita (mil)"
+  ) +
+  theme_minimal()
+```
+
+### Figura 3 – Relação entre receita_mil e invest_digital
+
+```{r}
+ggplot(dados, aes(x = invest_digital, y = receita_mil)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE, color="red") +
+  labs(
+    title = "Receita vs Investimento Digital",
+    x = "Investimento Digital",
+    y = "Receita (mil)"
+  ) +
+  theme_minimal()
+```
+
+### Figura 4 – Relação entre receita_mil e num_cliques_mil
+
+```{r}
+ggplot(dados, aes(x = num_cliques_mil, y = receita_mil)) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE, color="red") +
+  labs(
+    title = "Receita vs Número de Cliques",
+    x = "Cliques (mil)",
+    y = "Receita (mil)"
+  ) +
+  theme_minimal()
+```
