@@ -8,8 +8,8 @@ date: "2026-03-15"
 format:
   html:
     theme: flatly
+    
 number-sections: true
-theme: flatly
 toc-location: left
 toc: true
 editor: visual
